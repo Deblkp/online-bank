@@ -1,0 +1,1545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Banking System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Variables for a Cohesive Color Palette */
+        :root {
+            --primary-blue: #007bff; /* Vibrant Blue */
+            --primary-blue-dark: #0056b3;
+            --accent-green: #28a745; /* Success Green */
+            --accent-green-dark: #1e7e34;
+            --accent-red: #dc3545; /* Danger Red */
+            --accent-red-dark: #bd2130;
+            --accent-orange: #ffc107; /* Warning Orange */
+            --accent-orange-dark: #e0a800;
+            --text-dark: #343a40; /* Darker text for readability */
+            --text-medium: #6c757d;
+            --bg-light: #f8f9fa; /* Light background */
+            --card-bg: #ffffff;
+            --border-light: #dee2e6;
+            --shadow-light: rgba(0, 0, 0, 0.08);
+            --shadow-medium: rgba(0, 0, 0, 0.15);
+        }
+
+        /* General Body Styles */
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #e9ecef, #f0f2f5); /* Soft gradient background */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem 0;
+            margin: 0;
+            overflow-y: auto;
+            color: var(--text-dark);
+            font-size: 16px; /* Base font size */
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #888; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #555; }
+
+        /* Fade Animations */
+        .fade-in { animation: fadeIn 0.6s ease-in-out forwards; }
+        .fade-out { animation: fadeOut 0.6s ease-in-out forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes fadeOut {
+            from { opacity: 1; transform: translateY(0); }
+            to { opacity: 0; transform: translateY(20px); }
+        }
+
+        /* App Container */
+        #app-container {
+            background-color: var(--card-bg);
+            padding: 3rem;
+            border-radius: 1.5rem;
+            box-shadow: 0 20px 40px -10px var(--shadow-medium), 0 8px 15px -5px var(--shadow-light);
+            max-width: 90rem; /* Wider for banking features */
+            width: 90%;
+            margin: 2rem auto;
+            transition: all 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border: 1px solid var(--border-light);
+            overflow: hidden; /* Ensures shadows and borders are contained */
+        }
+        @media (min-width: 768px) {
+            #app-container {
+                padding: 4rem;
+            }
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            margin-bottom: 2.5rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 1.8rem;
+            border-bottom: 2px solid var(--border-light);
+        }
+        header h1 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 3.5rem;
+            font-weight: 700;
+            text-align: center;
+            width: 100%;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(45deg, var(--primary-blue), #6a11cb, #2575fc); /* A vibrant gradient */
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+
+        /* Navigation */
+        #main-nav {
+            display: none;
+            width: 100%;
+            justify-content: center;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .nav-button {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+            padding: 0.9rem 1.6rem;
+            border-radius: 0.8rem;
+            box-shadow: 0 4px 8px var(--shadow-light);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: none;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.03em;
+            color: #ffffff;
+            background-color: var(--primary-blue);
+        }
+        .nav-button:hover {
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 6px 12px var(--shadow-medium);
+            background-color: var(--primary-blue-dark);
+        }
+        .nav-button:active { transform: translateY(1px) scale(0.99); } /* Press down effect */
+
+        /* Specific Nav Button Colors */
+        #dashboard-btn { background-color: #007bff; }
+        #dashboard-btn:hover { background-color: #0056b3; }
+        #deposit-nav-btn { background-color: #28a745; }
+        #deposit-nav-btn:hover { background-color: #1e7e34; }
+        #withdraw-nav-btn { background-color: #ffc107; }
+        #withdraw-nav-btn:hover { background-color: #e0a800; }
+        #transfer-nav-btn { background-color: #6c757d; }
+        #transfer-nav-btn:hover { background-color: #545b62; }
+        #history-nav-btn { background-color: #17a2b8; } /* Info color */
+        #history-nav-btn:hover { background-color: #138496; }
+        #profile-nav-btn { background-color: #6f42c1; } /* Purple */
+        #profile-nav-btn:hover { background-color: #563d7c; }
+        #security-nav-btn { background-color: #fd7e14; } /* Orange */
+        #security-nav-btn:hover { background-color: #e8720e; }
+        #logout-btn { background-color: #dc3545; }
+        #logout-btn:hover { background-color: #bd2130; }
+
+        /* Toast Message System */
+        #toast-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column-reverse;
+            gap: 10px;
+            max-width: 380px;
+        }
+        .toast {
+            background-color: var(--card-bg);
+            color: var(--text-dark);
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideInToast 0.5s forwards, fadeOutToast 0.5s 2.5s forwards;
+            position: relative;
+            overflow: hidden;
+            border-left: 5px solid;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+        .toast.success { border-left-color: var(--accent-green); }
+        .toast.error { border-left-color: var(--accent-red); }
+        .toast.info { border-left-color: var(--primary-blue); }
+
+        .toast-icon { font-size: 1.4rem; }
+        .toast.success .toast-icon { color: var(--accent-green); }
+        .toast.error .toast-icon { color: var(--accent-red); }
+        .toast.info .toast-icon { color: var(--primary-blue); }
+
+        .toast-close-btn {
+            background: none; border: none; font-size: 1.2rem; cursor: pointer;
+            color: var(--text-medium); margin-left: auto; padding: 5px;
+            border-radius: 5px; transition: background-color 0.2s;
+        }
+        .toast-close-btn:hover { background-color: #f0f0f0; }
+
+        @keyframes slideInToast {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes fadeOutToast {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+
+        /* Section Styling */
+        section {
+            width: 100%;
+            display: none;
+            padding: 2rem;
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid var(--border-light);
+            margin-top: 1.5rem; /* Space from header */
+        }
+        section.fade-in { display: block; }
+        section h2 {
+            font-family: 'Montserrat', sans-serif;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+            margin-bottom: 2rem;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.05);
+        }
+
+        /* Auth Section */
+        #auth-section { max-width: 28rem; padding: 2.5rem; }
+        #auth-form { display: flex; flex-direction: column; gap: 1.5rem; }
+        #auth-form label {
+            display: block; font-size: 0.9rem; font-weight: 500; color: var(--text-medium); margin-bottom: 0.4rem;
+        }
+        #auth-form input {
+            width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border-light); border-radius: 0.5rem;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07); transition: all 0.2s ease-in-out; font-size: 1rem;
+        }
+        #auth-form input:focus {
+            outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+        #auth-submit-btn {
+            width: 100%; background-color: var(--primary-blue); color: #ffffff; font-weight: 700;
+            padding: 0.9rem 1.25rem; border-radius: 0.7rem;
+            box-shadow: 0 4px 8px var(--shadow-light); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform: scale(1); border: none; cursor: pointer;
+        }
+        #auth-submit-btn:hover { background-color: var(--primary-blue-dark); transform: translateY(-2px) scale(1.01); }
+        #auth-section p { margin-top: 1.5rem; text-align: center; color: var(--text-medium); font-size: 0.95rem; }
+        #toggle-auth-mode {
+            color: var(--primary-blue); font-weight: 500; transition: color 0.2s ease-in-out;
+            background: none; border: none; padding: 0; cursor: pointer; text-decoration: underline;
+        }
+        #toggle-auth-mode:hover { color: var(--primary-blue-dark); }
+
+        /* Dashboard Section */
+        #dashboard-section .dashboard-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .balance-card {
+            background: linear-gradient(45deg, #6610f2, #6f42c1); /* Purple gradient */
+            color: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        .balance-card:hover { transform: translateY(-5px); }
+        .balance-card h3 { font-size: 1.2rem; font-weight: 500; margin-bottom: 0.5rem; }
+        .balance-card p { font-size: 2.5rem; font-weight: 700; }
+        .recent-transactions {
+            background-color: var(--bg-light);
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .recent-transactions h3 {
+            font-size: 1.5rem; font-weight: 600; color: var(--text-dark); margin-bottom: 1rem;
+        }
+        .recent-transactions ul { list-style: none; padding: 0; }
+        .recent-transactions li {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.8rem 0; border-bottom: 1px dashed var(--border-light);
+            font-size: 0.95rem;
+        }
+        .recent-transactions li:last-child { border-bottom: none; }
+        .transaction-type { font-weight: 500; }
+        .transaction-amount.deposit { color: var(--accent-green); font-weight: 700; }
+        .transaction-amount.withdrawal, .transaction-amount.transfer-out { color: var(--accent-red); font-weight: 700; }
+        .transaction-amount.transfer-in { color: var(--primary-blue); font-weight: 700; }
+        .transaction-date { font-size: 0.85rem; color: var(--text-medium); }
+        .view-all-transactions-btn {
+            display: block; width: fit-content; margin: 1.5rem auto 0;
+            background-color: var(--primary-blue); color: white; padding: 0.7rem 1.2rem;
+            border-radius: 0.6rem; text-decoration: none; font-weight: 500;
+            transition: background-color 0.2s; cursor: pointer; border: none;
+        }
+        .view-all-transactions-btn:hover { background-color: var(--primary-blue-dark); }
+
+        /* Form Sections (Deposit, Withdraw, Transfer, Profile, Security) */
+        #deposit-section, #withdraw-section, #transfer-section, #profile-section, #security-section {
+            max-width: 40rem;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .form-section {
+            display: flex; flex-direction: column; gap: 1.5rem;
+        }
+        .form-section label {
+            display: block; font-size: 0.9rem; font-weight: 500; color: var(--text-medium); margin-bottom: 0.4rem;
+        }
+        .form-section input, .form-section select {
+            width: 100%; padding: 0.8rem 1rem; border: 1px solid var(--border-light); border-radius: 0.5rem;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.07); transition: all 0.2s ease-in-out; font-size: 1rem;
+        }
+        .form-section input:focus, .form-section select:focus {
+            outline: none; border-color: var(--primary-blue); box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.25);
+        }
+
+        .form-submit-btn {
+            width: 100%; font-weight: 600; padding: 0.9rem 1.25rem; border-radius: 0.7rem;
+            box-shadow: 0 4px 8px var(--shadow-light); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            transform: scale(1); border: none; cursor: pointer; color: #ffffff;
+            font-family: 'Montserrat', sans-serif;
+        }
+        .form-submit-btn:hover { transform: translateY(-2px) scale(1.01); box-shadow: 0 6px 12px var(--shadow-medium); }
+        .form-submit-btn:disabled {
+            background-color: #cccccc; cursor: not-allowed; transform: none; box-shadow: none; opacity: 0.7;
+        }
+
+        #deposit-form .form-submit-btn { background-color: var(--accent-green); }
+        #deposit-form .form-submit-btn:hover { background-color: var(--accent-green-dark); }
+        #withdraw-form .form-submit-btn { background-color: var(--accent-orange); }
+        #withdraw-form .form-submit-btn:hover { background-color: var(--accent-orange-dark); }
+        #transfer-form .form-submit-btn { background-color: var(--primary-blue); }
+        #transfer-form .form-submit-btn:hover { background-color: var(--primary-blue-dark); }
+        #profile-form .form-submit-btn { background-color: var(--primary-blue); }
+        #profile-form .form-submit-btn:hover { background-color: var(--primary-blue-dark); }
+        #security-form .form-submit-btn { background-color: var(--primary-blue); }
+        #security-form .form-submit-btn:hover { background-color: var(--primary-blue-dark); }
+        #change-password-btn { background-color: #6c757d; }
+        #change-password-btn:hover { background-color: #545b62; }
+
+        /* Transaction History Section */
+        #transaction-history-section .history-table-container {
+            overflow-x: auto; /* Enable horizontal scroll for small screens */
+        }
+        #transaction-history-table {
+            width: 100%; border-collapse: collapse; min-width: 600px; /* Minimum width for table */
+        }
+        #transaction-history-table th, #transaction-history-table td {
+            padding: 1rem; border: 1px solid var(--border-light); text-align: left;
+        }
+        #transaction-history-table th {
+            background-color: var(--bg-light); color: var(--text-dark); font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.9rem;
+        }
+        #transaction-history-table tbody tr:nth-child(even) { background-color: #f2f2f2; }
+        #transaction-history-table tbody tr:hover { background-color: #e9ecef; }
+        #transaction-history-table td.deposit { color: var(--accent-green); font-weight: 500; }
+        #transaction-history-table td.withdrawal, #transaction-history-table td.transfer-out { color: var(--accent-red); font-weight: 500; }
+        #transaction-history-table td.transfer-in { color: var(--primary-blue); font-weight: 500; }
+        #transaction-history-table td.date { font-size: 0.85rem; color: var(--text-medium); }
+
+
+        /* Security Section specific */
+        #security-section .security-options {
+            display: flex; flex-direction: column; gap: 1rem;
+        }
+        .security-option-card {
+            background-color: var(--bg-light);
+            padding: 1.2rem;
+            border-radius: 0.8rem;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--text-dark);
+            border: 1px solid var(--border-light);
+        }
+        .security-option-card label { margin: 0; } /* Override default label styling */
+        .switch {
+            position: relative; display: inline-block; width: 45px; height: 25px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #ccc; transition: .4s; border-radius: 25px;
+        }
+        .slider:before {
+            position: absolute; content: ""; height: 17px; width: 17px; left: 4px; bottom: 4px;
+            background-color: white; transition: .4s; border-radius: 50%;
+        }
+        input:checked + .slider { background-color: var(--accent-green); }
+        input:focus + .slider { box-shadow: 0 0 1px var(--accent-green); }
+        input:checked + .slider:before { transform: translateX(20px); }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.75); display: flex; align-items: center; justify-content: center;
+            z-index: 10000; opacity: 0; visibility: hidden;
+            transition: opacity 0.4s ease-in-out, visibility 0.4s ease-in-out;
+            backdrop-filter: blur(5px);
+        }
+        .modal-overlay.visible { opacity: 1; visibility: visible; }
+        .modal-content {
+            background-color: var(--card-bg); padding: 2.5rem; border-radius: 1rem;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3); max-width: 450px; width: 90%;
+            text-align: center; transform: scale(0.8);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid var(--border-light);
+        }
+        .modal-overlay.visible .modal-content { transform: scale(1); }
+        .modal-content h3 {
+            font-family: 'Montserrat', sans-serif; font-size: 1.6rem; font-weight: 700;
+            color: var(--text-dark); margin-bottom: 1rem;
+        }
+        .modal-content p { font-size: 1rem; color: var(--text-medium); margin-bottom: 1.5rem; line-height: 1.5; }
+        .modal-buttons { display: flex; justify-content: center; gap: 1rem; }
+        .modal-buttons button {
+            padding: 0.8rem 1.5rem; border-radius: 0.6rem; font-weight: 600; cursor: pointer;
+            transition: all 0.2s ease-in-out; border: none; color: white;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .modal-buttons button:hover { transform: translateY(-1px); box-shadow: 0 4px 8px rgba(0,0,0,0.15); }
+        .modal-buttons .confirm-btn { background-color: var(--accent-green); }
+        .modal-buttons .confirm-btn:hover { background-color: var(--accent-green-dark); }
+        .modal-buttons .cancel-btn { background-color: var(--accent-red); }
+        .modal-buttons .cancel-btn:hover { background-color: var(--accent-red-dark); }
+        .modal-buttons .ok-btn { background-color: var(--primary-blue); }
+        .modal-buttons .ok-btn:hover { background-color: var(--primary-blue-dark); }
+
+        /* Contact Support Button */
+        .contact-support-btn {
+            background-color: var(--primary-blue); color: white; border: none;
+            padding: 0.9rem 1.8rem; border-radius: 0.8rem; font-weight: 700;
+            cursor: pointer; transition: all 0.3s ease-in-out;
+            box-shadow: 0 6px 12px -2px var(--shadow-medium); margin-top: 2.5rem;
+            display: block; /* Make it a block element to center */
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .contact-support-btn:hover { background-color: var(--primary-blue-dark); transform: translateY(-3px); box-shadow: 0 10px 20px -4px var(--shadow-medium); }
+
+        /* Progress indicator for forms */
+        .processing-indicator {
+            opacity: 0.7;
+            cursor: wait;
+        }
+        .processing-indicator::after {
+            content: '';
+            display: inline-block;
+            width: 18px;
+            height: 18px;
+            border: 3px solid rgba(255, 255, 255, 0.7);
+            border-top-color: transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 12px;
+            vertical-align: middle;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div id="app-container">
+
+        <!-- Header/Navigation -->
+        <header>
+            <h1>MyBank</h1>
+            <nav id="main-nav">
+                <button id="dashboard-btn" class="nav-button">Dashboard</button>
+                <button id="deposit-nav-btn" class="nav-button">Deposit</button>
+                <button id="withdraw-nav-btn" class="nav-button">Withdraw</button>
+                <button id="transfer-nav-btn" class="nav-button">Transfer</button>
+                <button id="history-nav-btn" class="nav-button">History</button>
+                <button id="profile-nav-btn" class="nav-button">Profile</button>
+                <button id="security-nav-btn" class="nav-button">Security</button>
+                <button id="logout-btn" class="nav-button">Logout</button>
+            </nav>
+        </header>
+
+        <!-- Toast Container -->
+        <div id="toast-container"></div>
+
+        <!-- Login/Signup Section -->
+        <section id="auth-section" class="fade-in">
+            <h2 id="auth-title">Login to MyBank</h2>
+            <form id="auth-form">
+                <div>
+                    <label for="username">Username</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div>
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <button type="submit" id="auth-submit-btn">Login</button>
+            </form>
+            <p>
+                Don't have an account?
+                <button id="toggle-auth-mode">Sign up</button>
+            </p>
+        </section>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard-section">
+            <h2>Welcome, <span id="dashboard-username"></span>!</h2>
+            <div class="dashboard-summary">
+                <div class="balance-card">
+                    <h3>Current Balance</h3>
+                    <p>$<span id="account-balance">0.00</span></p>
+                </div>
+                <div class="balance-card">
+                    <h3>Account Number</h3>
+                    <p><span id="account-number">**** **** 1234</span></p>
+                </div>
+            </div>
+
+            <div class="recent-transactions">
+                <h3>Recent Transactions</h3>
+                <ul id="recent-transactions-list">
+                    <!-- Recent transactions will be loaded here by JavaScript -->
+                    <li>No recent transactions.</li>
+                </ul>
+                <button id="view-all-transactions-btn" class="view-all-transactions-btn">View All Transactions</button>
+            </div>
+            <button id="contact-support-btn" class="contact-support-btn">Contact Support</button>
+        </section>
+
+        <!-- Deposit Section -->
+        <section id="deposit-section">
+            <h2>Deposit Funds</h2>
+            <form id="deposit-form" class="form-section">
+                <div>
+                    <label for="deposit-amount">Amount ($)</label>
+                    <input type="number" id="deposit-amount" name="amount" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="deposit-description">Description</label>
+                    <input type="text" id="deposit-description" name="description" placeholder="e.g., Paycheck, Gift">
+                </div>
+                <button type="submit" class="form-submit-btn">Deposit</button>
+            </form>
+        </section>
+
+        <!-- Withdraw Section -->
+        <section id="withdraw-section">
+            <h2>Withdraw Funds</h2>
+            <form id="withdraw-form" class="form-section">
+                <div>
+                    <label for="withdraw-amount">Amount ($)</label>
+                    <input type="number" id="withdraw-amount" name="amount" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="withdraw-description">Description</label>
+                    <input type="text" id="withdraw-description" name="description" placeholder="e.g., Cash, Bills">
+                </div>
+                <button type="submit" class="form-submit-btn">Withdraw</button>
+            </form>
+        </section>
+
+        <!-- Transfer Section -->
+        <section id="transfer-section">
+            <h2>Transfer Funds</h2>
+            <form id="transfer-form" class="form-section">
+                <div>
+                    <label for="transfer-recipient-account">Recipient Account Number</label>
+                    <input type="text" id="transfer-recipient-account" name="recipientAccount" required placeholder="e.g., 1234567890">
+                </div>
+                <div>
+                    <label for="transfer-amount">Amount ($)</label>
+                    <input type="number" id="transfer-amount" name="amount" min="0.01" step="0.01" required>
+                </div>
+                <div>
+                    <label for="transfer-description">Description</label>
+                    <input type="text" id="transfer-description" name="description" placeholder="e.g., Rent, Friend">
+                </div>
+                <button type="submit" class="form-submit-btn">Transfer</button>
+            </form>
+        </section>
+
+        <!-- Transaction History Section -->
+        <section id="transaction-history-section">
+            <h2>Transaction History</h2>
+            <div class="history-table-container">
+                <table id="transaction-history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Balance</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Transaction history will be loaded here by JavaScript -->
+                        <tr><td colspan="5" style="text-align: center; color: var(--text-medium);">No transactions yet.</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- Profile Settings Section -->
+        <section id="profile-section">
+            <h2>Profile Settings</h2>
+            <form id="profile-form" class="form-section">
+                <div>
+                    <label for="profile-username">Username</label>
+                    <input type="text" id="profile-username" name="username" readonly>
+                </div>
+                <div>
+                    <label for="profile-full-name">Full Name</label>
+                    <input type="text" id="profile-full-name" name="fullName" required>
+                </div>
+                <div>
+                    <label for="profile-email">Email Address</label>
+                    <input type="email" id="profile-email" name="email" required>
+                </div>
+                <button type="submit" class="form-submit-btn">Save Profile</button>
+            </form>
+        </section>
+
+        <!-- Security Settings Section -->
+        <section id="security-section">
+            <h2>Security Settings</h2>
+            <form id="security-form" class="form-section">
+                <div class="security-options">
+                    <div class="security-option-card">
+                        <span>Two-Factor Authentication (2FA)</span>
+                        <label class="switch">
+                            <input type="checkbox" id="toggle-2fa">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="security-option-card">
+                        <span>Change Password</span>
+                        <button type="button" id="change-password-btn" class="form-submit-btn" style="width: auto;">Change Password</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+
+    <!-- Modal Markup -->
+    <div id="confirmation-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="modal-title">Confirm Action</h3>
+            <p id="modal-message">Are you sure you want to proceed?</p>
+            <div class="modal-buttons">
+                <button class="cancel-btn" id="modal-cancel">Cancel</button>
+                <button class="confirm-btn" id="modal-confirm">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="alert-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 id="alert-modal-title">Notification</h3>
+            <p id="alert-modal-message">This is an alert message.</p>
+            <div class="modal-buttons">
+                <button class="ok-btn" id="alert-modal-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="change-password-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3>Change Password</h3>
+            <form id="change-password-form" class="form-section" style="padding: 0;">
+                <div>
+                    <label for="current-password">Current Password</label>
+                    <input type="password" id="current-password" required>
+                </div>
+                <div>
+                    <label for="new-password">New Password</label>
+                    <input type="password" id="new-password" required>
+                </div>
+                <div>
+                    <label for="confirm-new-password">Confirm New Password</label>
+                    <input type="password" id="confirm-new-password" required>
+                </div>
+                <div class="modal-buttons">
+                    <button type="button" class="cancel-btn" id="change-password-cancel">Cancel</button>
+                    <button type="submit" class="confirm-btn">Update Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- Global Data (In-memory for this demo) ---
+        // This 'users' object simulates a backend database for user accounts.
+        // In a real application, this data would be stored securely on a server.
+        let currentUser = null; // Stores the username of the currently logged-in user
+        let users = {
+            'john.doe': {
+                password: 'password123',
+                fullName: 'John Doe',
+                email: 'john.doe@example.com',
+                accountNumber: '5432167890',
+                balance: 1500.75,
+                is2FAEnabled: false,
+                transactions: [
+                    { type: 'deposit', amount: 1000.00, description: 'Initial Deposit', date: '2024-01-01', balanceAfter: 1000.00 },
+                    { type: 'withdrawal', amount: 50.25, description: 'Groceries', date: '2024-01-05', balanceAfter: 949.75 },
+                    { type: 'deposit', amount: 500.00, description: 'Paycheck', date: '2024-01-10', balanceAfter: 1449.75 },
+                    { type: 'transfer-out', amount: 100.00, description: 'To Jane Doe', recipient: 'jane.doe', date: '2024-01-12', balanceAfter: 1349.75 },
+                    { type: 'transfer-in', amount: 150.00, description: 'From Alice Smith', sender: 'alice.smith', date: '2024-01-15', balanceAfter: 1499.75 },
+                ]
+            },
+            'jane.doe': {
+                password: 'password456',
+                fullName: 'Jane Doe',
+                email: 'jane.doe@example.com',
+                accountNumber: '1234567890',
+                balance: 750.00,
+                is2FAEnabled: false,
+                transactions: [
+                    { type: 'deposit', amount: 500.00, description: 'Initial Funds', date: '2024-01-01', balanceAfter: 500.00 },
+                    { type: 'transfer-in', amount: 100.00, description: 'From John Doe', sender: 'john.doe', date: '2024-01-12', balanceAfter: 600.00 },
+                    { type: 'withdrawal', amount: 50.00, description: 'Shopping', date: '2024-01-14', balanceAfter: 550.00 }
+                ]
+            }
+        };
+
+        // --- DOM Element References ---
+        const authSection = document.getElementById('auth-section');
+        const dashboardSection = document.getElementById('dashboard-section');
+        const depositSection = document.getElementById('deposit-section');
+        const withdrawSection = document.getElementById('withdraw-section');
+        const transferSection = document.getElementById('transfer-section');
+        const transactionHistorySection = document.getElementById('transaction-history-section');
+        const profileSection = document.getElementById('profile-section');
+        const securitySection = document.getElementById('security-section');
+
+        const authForm = document.getElementById('auth-form');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const authTitle = document.getElementById('auth-title');
+        const authSubmitBtn = document.getElementById('auth-submit-btn');
+        const toggleAuthModeBtn = document.getElementById('toggle-auth-mode');
+
+        const mainNav = document.getElementById('main-nav');
+        const navButtons = document.querySelectorAll('.nav-button'); // Get all nav buttons
+        const dashboardBtn = document.getElementById('dashboard-btn');
+        const depositNavBtn = document.getElementById('deposit-nav-btn');
+        const withdrawNavBtn = document.getElementById('withdraw-nav-btn');
+        const transferNavBtn = document.getElementById('transfer-nav-btn');
+        const historyNavBtn = document.getElementById('history-nav-btn');
+        const profileNavBtn = document.getElementById('profile-nav-btn');
+        const securityNavBtn = document.getElementById('security-nav-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+
+        const dashboardUsernameSpan = document.getElementById('dashboard-username');
+        const accountBalanceSpan = document.getElementById('account-balance');
+        const accountNumberSpan = document.getElementById('account-number');
+        const recentTransactionsList = document.getElementById('recent-transactions-list');
+        const viewAllTransactionsBtn = document.getElementById('view-all-transactions-btn');
+        const contactSupportBtn = document.getElementById('contact-support-btn');
+
+        const depositForm = document.getElementById('deposit-form');
+        const depositAmountInput = document.getElementById('deposit-amount');
+        const depositDescriptionInput = document.getElementById('deposit-description');
+
+        const withdrawForm = document.getElementById('withdraw-form');
+        const withdrawAmountInput = document.getElementById('withdraw-amount');
+        const withdrawDescriptionInput = document.getElementById('withdraw-description');
+
+        const transferForm = document.getElementById('transfer-form');
+        const transferRecipientAccountInput = document.getElementById('transfer-recipient-account');
+        const transferAmountInput = document.getElementById('transfer-amount');
+        const transferDescriptionInput = document.getElementById('transfer-description');
+
+        const transactionHistoryTableBody = document.querySelector('#transaction-history-table tbody');
+
+        const profileForm = document.getElementById('profile-form');
+        const profileUsernameInput = document.getElementById('profile-username');
+        const profileFullNameInput = document.getElementById('profile-full-name');
+        const profileEmailInput = document.getElementById('profile-email');
+
+        const securityForm = document.getElementById('security-form');
+        const toggle2FA = document.getElementById('toggle-2fa');
+        const changePasswordBtn = document.getElementById('change-password-btn');
+
+        // Modal Elements
+        const confirmationModal = document.getElementById('confirmation-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmBtn = document.getElementById('modal-confirm');
+        const modalCancelBtn = document.getElementById('modal-cancel');
+
+        const alertModal = document.getElementById('alert-modal');
+        const alertModalTitle = document.getElementById('alert-modal-title');
+        const alertModalMessage = document.getElementById('alert-modal-message');
+        const alertModalOkBtn = document.getElementById('alert-modal-ok');
+
+        const changePasswordModal = document.getElementById('change-password-modal');
+        const changePasswordForm = document.getElementById('change-password-form');
+        const currentPasswordInput = document.getElementById('current-password');
+        const newPasswordInput = document.getElementById('new-password');
+        const confirmNewPasswordInput = document.getElementById('confirm-new-password');
+        const changePasswordCancelBtn = document.getElementById('change-password-cancel');
+
+        const toastContainer = document.getElementById('toast-container');
+
+        // State for authentication mode (login or signup)
+        let isLoginMode = true;
+
+        // --- Utility Functions ---
+
+        /**
+         * Displays a temporary toast message to the user.
+         * @param {string} message - The message to display.
+         * @param {string} type - 'success', 'error', or 'info' to style the toast.
+         * @param {string} iconContent - Emoji or character for the toast icon.
+         */
+        function showToast(message, type, iconContent) {
+            const toast = document.createElement('div');
+            toast.classList.add('toast', type);
+            toast.innerHTML = `
+                <span class="toast-icon">${iconContent}</span>
+                <span>${message}</span>
+                <button class="toast-close-btn">&times;</button>
+            `;
+            toastContainer.appendChild(toast);
+
+            // Trigger reflow to ensure animation starts correctly
+            void toast.offsetWidth;
+
+            toast.style.opacity = 1;
+            toast.style.transform = 'translateX(0)';
+
+            const closeButton = toast.querySelector('.toast-close-btn');
+            closeButton.addEventListener('click', () => {
+                toast.style.opacity = 0;
+                toast.style.transform = 'translateX(100%)';
+                toast.addEventListener('transitionend', () => toast.remove());
+            });
+
+            setTimeout(() => {
+                toast.style.opacity = 0;
+                toast.style.transform = 'translateX(100%)';
+                toast.addEventListener('transitionend', () => toast.remove());
+            }, 3500); // Auto-hide after 3.5 seconds
+        }
+
+        /**
+         * Shows a custom confirmation modal.
+         * @param {string} title - Title of the modal.
+         * @param {string} message - Message to display.
+         * @returns {Promise<boolean>} - Resolves true if confirmed, false if canceled.
+         */
+        function showConfirmationModal(title, message) {
+            return new Promise((resolve) => {
+                modalTitle.textContent = title;
+                modalMessage.textContent = message;
+                confirmationModal.classList.add('visible');
+
+                const confirmHandler = () => {
+                    confirmationModal.classList.remove('visible');
+                    modalConfirmBtn.removeEventListener('click', confirmHandler);
+                    modalCancelBtn.removeEventListener('click', cancelHandler);
+                    resolve(true);
+                };
+
+                const cancelHandler = () => {
+                    confirmationModal.classList.remove('visible');
+                    modalConfirmBtn.removeEventListener('click', confirmHandler);
+                    modalCancelBtn.removeEventListener('click', cancelHandler);
+                    resolve(false);
+                };
+
+                modalConfirmBtn.addEventListener('click', confirmHandler);
+                modalCancelBtn.addEventListener('click', cancelHandler);
+            });
+        }
+
+        /**
+         * Shows a custom alert modal.
+         * @param {string} title - Title of the modal.
+         * @param {string} message - Message to display.
+         * @returns {Promise<void>} - Resolves when OK is clicked.
+         */
+        function showAlertModal(title, message) {
+            return new Promise((resolve) => {
+                alertModalTitle.textContent = title;
+                alertModalMessage.textContent = message;
+                alertModal.classList.add('visible');
+
+                const okHandler = () => {
+                    alertModal.classList.remove('visible');
+                    alertModalOkBtn.removeEventListener('click', okHandler);
+                    resolve();
+                };
+                alertModalOkBtn.addEventListener('click', okHandler);
+            });
+        }
+
+        /**
+         * Hides all content sections and shows the specified section.
+         * Applies fade-out to current section and fade-in to new section.
+         * @param {HTMLElement} sectionToShow - The section DOM element to display.
+         */
+        function showSection(sectionToShow) {
+            const sections = [authSection, dashboardSection, depositSection, withdrawSection, transferSection, transactionHistorySection, profileSection, securitySection];
+            sections.forEach(section => {
+                if (section.classList.contains('fade-in')) {
+                    section.classList.remove('fade-in');
+                    section.classList.add('fade-out');
+                    setTimeout(() => {
+                        section.classList.add('hidden');
+                        section.classList.remove('fade-out');
+                    }, 600);
+                } else {
+                    section.classList.add('hidden');
+                }
+            });
+
+            // Ensure the main nav is visible when logged in
+            if (currentUser) {
+                mainNav.style.display = 'flex';
+            } else {
+                mainNav.style.display = 'none';
+            }
+
+            setTimeout(() => {
+                sectionToShow.classList.remove('hidden');
+                sectionToShow.classList.add('fade-in');
+            }, 400);
+        }
+
+        /**
+         * Adds a processing visual to a button during an asynchronous operation.
+         * @param {HTMLButtonElement} button - The button to modify.
+         * @param {string} originalText - The original text of the button.
+         */
+        function startProcessing(button, originalText) {
+            button.disabled = true;
+            button.textContent = 'Processing...';
+            button.classList.add('processing-indicator');
+            button.dataset.originalText = originalText; // Store original text
+        }
+
+        /**
+         * Removes the processing visual from a button.
+         * @param {HTMLButtonElement} button - The button to modify.
+         */
+        function stopProcessing(button) {
+            button.disabled = false;
+            button.textContent = button.dataset.originalText || 'Submit'; // Restore original text
+            button.classList.remove('processing-indicator');
+            delete button.dataset.originalText;
+        }
+
+
+        // --- Authentication Logic ---
+
+        /**
+         * Handles user login or signup.
+         * @param {Event} event - The form submission event.
+         */
+        authForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const submitButton = authSubmitBtn;
+            const originalButtonText = submitButton.textContent;
+            startProcessing(submitButton, originalButtonText);
+
+            setTimeout(() => { // Simulate network delay
+                const username = usernameInput.value.trim();
+                const password = passwordInput.value.trim();
+
+                if (!username || !password) {
+                    showToast('Please enter both username and password.', 'error', '❌');
+                    stopProcessing(submitButton);
+                    return;
+                }
+
+                if (isLoginMode) {
+                    // Login logic
+                    if (users[username] && users[username].password === password) {
+                        currentUser = username;
+                        showToast('Login successful!', 'success', '✔️');
+                        renderDashboard();
+                        showSection(dashboardSection);
+                    } else {
+                        showToast('Invalid username or password.', 'error', '❌');
+                    }
+                } else {
+                    // Signup logic
+                    if (users[username]) {
+                        showToast('Username already taken. Please choose another.', 'error', '❌');
+                    } else {
+                        // Create a new user with default values
+                        users[username] = {
+                            password: password,
+                            fullName: `New User ${Math.floor(Math.random() * 1000)}`,
+                            email: `${username}@example.com`,
+                            accountNumber: `ACC${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 900) + 100}`,
+                            balance: 0.00,
+                            is2FAEnabled: false,
+                            transactions: []
+                        };
+                        currentUser = username;
+                        showToast('Signup successful! Welcome to MyBank.', 'success', '👋');
+                        renderDashboard();
+                        showSection(dashboardSection);
+                    }
+                }
+                usernameInput.value = '';
+                passwordInput.value = '';
+                stopProcessing(submitButton);
+            }, 1000);
+        });
+
+        /**
+         * Toggles between login and signup modes for the authentication form.
+         */
+        toggleAuthModeBtn.addEventListener('click', function() {
+            isLoginMode = !isLoginMode;
+            authTitle.textContent = isLoginMode ? 'Login to MyBank' : 'Sign Up for MyBank';
+            authSubmitBtn.textContent = isLoginMode ? 'Login' : 'Sign Up';
+            toggleAuthModeBtn.textContent = isLoginMode ? 'Sign up' : 'Login';
+        });
+
+        // --- Dashboard & Navigation Logic ---
+
+        /**
+         * Renders the dashboard with current user's details and recent transactions.
+         */
+        function renderDashboard() {
+            if (!currentUser || !users[currentUser]) {
+                showToast('User data not found for dashboard.', 'error', '❌');
+                return;
+            }
+            const userData = users[currentUser];
+            dashboardUsernameSpan.textContent = userData.fullName;
+            accountBalanceSpan.textContent = userData.balance.toFixed(2);
+            // Mask part of the account number for display
+            const maskedAccountNumber = userData.accountNumber.slice(0, 4) + ' **** **** ' + userData.accountNumber.slice(-4);
+            accountNumberSpan.textContent = maskedAccountNumber;
+
+            renderRecentTransactions();
+        }
+
+        /**
+         * Renders recent transactions on the dashboard.
+         */
+        function renderRecentTransactions() {
+            if (!currentUser || !users[currentUser]) return;
+
+            const transactions = users[currentUser].transactions.slice().reverse(); // Get latest transactions
+            recentTransactionsList.innerHTML = ''; // Clear existing list
+
+            if (transactions.length === 0) {
+                recentTransactionsList.innerHTML = '<li>No recent transactions.</li>';
+                return;
+            }
+
+            const displayCount = Math.min(transactions.length, 5); // Show up to 5 recent transactions
+
+            for (let i = 0; i < displayCount; i++) {
+                const transaction = transactions[i];
+                const listItem = document.createElement('li');
+                let amountClass = '';
+                let amountSign = '';
+
+                if (transaction.type === 'deposit' || transaction.type === 'transfer-in') {
+                    amountClass = transaction.type;
+                    amountSign = '+';
+                } else if (transaction.type === 'withdrawal' || transaction.type === 'transfer-out') {
+                    amountClass = transaction.type;
+                    amountSign = '-';
+                }
+
+                listItem.innerHTML = `
+                    <span class="transaction-type">${capitalizeFirstLetter(transaction.type)}</span>
+                    <span>${transaction.description}</span>
+                    <span class="transaction-amount ${amountClass}">${amountSign}$${transaction.amount.toFixed(2)}</span>
+                    <span class="transaction-date">${transaction.date}</span>
+                `;
+                recentTransactionsList.appendChild(listItem);
+            }
+        }
+
+        /**
+         * Helper to capitalize the first letter of a string.
+         * @param {string} string - The input string.
+         * @returns {string} - The string with the first letter capitalized.
+         */
+        function capitalizeFirstLetter(string) {
+            return string.charAt(0).toUpperCase() + string.slice(1);
+        }
+
+        // --- Navigation Button Event Listeners ---
+        navButtons.forEach(button => {
+            button.addEventListener('click', (event) => {
+                if (!currentUser) {
+                    showToast('Please login to access this feature.', 'info', 'ℹ️');
+                    showSection(authSection);
+                    return;
+                }
+
+                // Determine which section to show based on button ID
+                let targetSection;
+                switch (event.target.id) {
+                    case 'dashboard-btn':
+                        renderDashboard();
+                        targetSection = dashboardSection;
+                        break;
+                    case 'deposit-nav-btn':
+                        depositForm.reset();
+                        depositAmountInput.value = ''; // Ensure number input is cleared
+                        targetSection = depositSection;
+                        break;
+                    case 'withdraw-nav-btn':
+                        withdrawForm.reset();
+                        withdrawAmountInput.value = '';
+                        targetSection = withdrawSection;
+                        break;
+                    case 'transfer-nav-btn':
+                        transferForm.reset();
+                        transferAmountInput.value = '';
+                        targetSection = transferSection;
+                        break;
+                    case 'history-nav-btn':
+                        renderTransactionHistory();
+                        targetSection = transactionHistorySection;
+                        break;
+                    case 'profile-nav-btn':
+                        populateProfileForm();
+                        targetSection = profileSection;
+                        break;
+                    case 'security-nav-btn':
+                        populateSecuritySettings();
+                        targetSection = securitySection;
+                        break;
+                    case 'logout-btn':
+                        // Logout handled separately to show confirmation modal
+                        return;
+                    default:
+                        showToast('Feature not implemented yet!', 'info', '🛠️');
+                        return;
+                }
+                showSection(targetSection);
+            });
+        });
+
+        // Specific logout button handler
+        logoutBtn.addEventListener('click', async () => {
+            const confirmed = await showConfirmationModal('Logout', 'Are you sure you want to log out?');
+            if (confirmed) {
+                currentUser = null;
+                showToast('You have been logged out.', 'info', '👋');
+                showSection(authSection);
+                mainNav.style.display = 'none'; // Hide navigation on logout
+            }
+        });
+
+        viewAllTransactionsBtn.addEventListener('click', () => {
+            historyNavBtn.click(); // Simulate clicking the History nav button
+        });
+
+        contactSupportBtn.addEventListener('click', async () => {
+            await showAlertModal('Contact Support', 'For support, please email us at support@mybank.com or call +1 (800) 123-4567. We are available 24/7.');
+        });
+
+        // --- Deposit Logic ---
+        depositForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                showToast('Please login to deposit funds.', 'error', '❌');
+                return;
+            }
+
+            const amount = parseFloat(depositAmountInput.value);
+            const description = depositDescriptionInput.value.trim() || 'Online Deposit';
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid positive amount.', 'error', '❌');
+                return;
+            }
+
+            const confirmed = await showConfirmationModal('Confirm Deposit', `Are you sure you want to deposit $${amount.toFixed(2)}?`);
+            if (!confirmed) {
+                showToast('Deposit cancelled.', 'info', 'ℹ️');
+                return;
+            }
+
+            const submitButton = depositForm.querySelector('.form-submit-btn');
+            const originalButtonText = submitButton.textContent;
+            startProcessing(submitButton, originalButtonText);
+
+            setTimeout(() => { // Simulate transaction processing delay
+                users[currentUser].balance += amount;
+                const newBalance = users[currentUser].balance;
+                const transaction = {
+                    type: 'deposit',
+                    amount: amount,
+                    description: description,
+                    date: new Date().toLocaleDateString('en-GB'),
+                    balanceAfter: newBalance
+                };
+                users[currentUser].transactions.push(transaction);
+
+                showToast(`$${amount.toFixed(2)} deposited successfully! New balance: $${newBalance.toFixed(2)}`, 'success', '💰');
+                depositForm.reset();
+                renderDashboard(); // Update dashboard
+                stopProcessing(submitButton);
+            }, 1500);
+        });
+
+        // --- Withdraw Logic ---
+        withdrawForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                showToast('Please login to withdraw funds.', 'error', '❌');
+                return;
+            }
+
+            const amount = parseFloat(withdrawAmountInput.value);
+            const description = withdrawDescriptionInput.value.trim() || 'Online Withdrawal';
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid positive amount.', 'error', '❌');
+                return;
+            }
+
+            if (amount > users[currentUser].balance) {
+                showToast('Insufficient funds.', 'error', '⚠️');
+                return;
+            }
+
+            const confirmed = await showConfirmationModal('Confirm Withdrawal', `Are you sure you want to withdraw $${amount.toFixed(2)}?`);
+            if (!confirmed) {
+                showToast('Withdrawal cancelled.', 'info', 'ℹ️');
+                return;
+            }
+
+            const submitButton = withdrawForm.querySelector('.form-submit-btn');
+            const originalButtonText = submitButton.textContent;
+            startProcessing(submitButton, originalButtonText);
+
+            setTimeout(() => { // Simulate transaction processing delay
+                users[currentUser].balance -= amount;
+                const newBalance = users[currentUser].balance;
+                const transaction = {
+                    type: 'withdrawal',
+                    amount: amount,
+                    description: description,
+                    date: new Date().toLocaleDateString('en-GB'),
+                    balanceAfter: newBalance
+                };
+                users[currentUser].transactions.push(transaction);
+
+                showToast(`$${amount.toFixed(2)} withdrawn successfully! New balance: $${newBalance.toFixed(2)}`, 'success', '💸');
+                withdrawForm.reset();
+                renderDashboard();
+                stopProcessing(submitButton);
+            }, 1500);
+        });
+
+        // --- Transfer Logic ---
+        transferForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                showToast('Please login to transfer funds.', 'error', '❌');
+                return;
+            }
+
+            const recipientAccount = transferRecipientAccountInput.value.trim();
+            const amount = parseFloat(transferAmountInput.value);
+            const description = transferDescriptionInput.value.trim() || 'Online Transfer';
+
+            if (isNaN(amount) || amount <= 0) {
+                showToast('Please enter a valid positive amount.', 'error', '❌');
+                return;
+            }
+
+            if (amount > users[currentUser].balance) {
+                showToast('Insufficient funds for transfer.', 'error', '⚠️');
+                return;
+            }
+
+            // Find recipient user by account number
+            let recipientUser = null;
+            let recipientUsername = null;
+            for (const userKey in users) {
+                if (users[userKey].accountNumber === recipientAccount) {
+                    recipientUser = users[userKey];
+                    recipientUsername = userKey;
+                    break;
+                }
+            }
+
+            if (!recipientUser) {
+                showToast('Recipient account not found.', 'error', '🤷');
+                return;
+            }
+            if (recipientUsername === currentUser) {
+                showToast('Cannot transfer to your own account.', 'error', '🚫');
+                return;
+            }
+
+            const confirmed = await showConfirmationModal('Confirm Transfer', `Are you sure you want to transfer $${amount.toFixed(2)} to ${recipientUser.fullName} (${recipientAccount})?`);
+            if (!confirmed) {
+                showToast('Transfer cancelled.', 'info', 'ℹ️');
+                return;
+            }
+
+            const submitButton = transferForm.querySelector('.form-submit-btn');
+            const originalButtonText = submitButton.textContent;
+            startProcessing(submitButton, originalButtonText);
+
+            setTimeout(() => { // Simulate transaction processing delay
+                // Deduct from sender
+                users[currentUser].balance -= amount;
+                const senderNewBalance = users[currentUser].balance;
+                users[currentUser].transactions.push({
+                    type: 'transfer-out',
+                    amount: amount,
+                    description: `${description} to ${recipientUser.fullName}`,
+                    recipient: recipientUsername,
+                    date: new Date().toLocaleDateString('en-GB'),
+                    balanceAfter: senderNewBalance
+                });
+
+                // Add to recipient
+                recipientUser.balance += amount;
+                const recipientNewBalance = recipientUser.balance;
+                recipientUser.transactions.push({
+                    type: 'transfer-in',
+                    amount: amount,
+                    description: `${description} from ${users[currentUser].fullName}`,
+                    sender: currentUser,
+                    date: new Date().toLocaleDateString('en-GB'),
+                    balanceAfter: recipientNewBalance
+                });
+
+                showToast(`$${amount.toFixed(2)} transferred to ${recipientUser.fullName} successfully!`, 'success', '🚀');
+                transferForm.reset();
+                renderDashboard();
+                stopProcessing(submitButton);
+            }, 2000); // Longer delay for transfers
+        });
+
+        // --- Transaction History Logic ---
+        function renderTransactionHistory() {
+            if (!currentUser || !users[currentUser]) {
+                transactionHistoryTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-medium);">Please login to view transaction history.</td></tr>`;
+                return;
+            }
+
+            const transactions = users[currentUser].transactions.slice().reverse(); // Display in reverse chronological order
+            transactionHistoryTableBody.innerHTML = ''; // Clear table
+
+            if (transactions.length === 0) {
+                transactionHistoryTableBody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-medium);">No transactions yet.</td></tr>`;
+                return;
+            }
+
+            transactions.forEach(transaction => {
+                const row = document.createElement('tr');
+                let amountClass = '';
+                let amountSign = '';
+
+                if (transaction.type === 'deposit' || transaction.type === 'transfer-in') {
+                    amountClass = 'deposit';
+                    amountSign = '+';
+                } else if (transaction.type === 'withdrawal' || transaction.type === 'transfer-out') {
+                    amountClass = 'withdrawal';
+                    amountSign = '-';
+                }
+
+                row.innerHTML = `
+                    <td class="date">${transaction.date}</td>
+                    <td>${capitalizeFirstLetter(transaction.type)}</td>
+                    <td>${transaction.description}</td>
+                    <td class="${amountClass}">${amountSign}$${transaction.amount.toFixed(2)}</td>
+                    <td>$${transaction.balanceAfter.toFixed(2)}</td>
+                `;
+                transactionHistoryTableBody.appendChild(row);
+            });
+        }
+
+        // --- Profile Settings Logic ---
+        function populateProfileForm() {
+            if (!currentUser || !users[currentUser]) return;
+            const userData = users[currentUser];
+            profileUsernameInput.value = currentUser;
+            profileFullNameInput.value = userData.fullName;
+            profileEmailInput.value = userData.email;
+        }
+
+        profileForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                showToast('You must be logged in to update your profile.', 'error', '❌');
+                return;
+            }
+
+            const fullName = profileFullNameInput.value.trim();
+            const email = profileEmailInput.value.trim();
+
+            if (!fullName || !email) {
+                showToast('Full Name and Email are required.', 'error', '❌');
+                return;
+            }
+            if (!email.includes('@') || !email.includes('.')) {
+                showToast('Please enter a valid email address.', 'error', '❌');
+                return;
+            }
+
+            const confirmed = await showConfirmationModal('Confirm Profile Update', 'Are you sure you want to save these profile changes?');
+            if (!confirmed) {
+                showToast('Profile update cancelled.', 'info', 'ℹ️');
+                return;
+            }
+
+            const submitButton = profileForm.querySelector('.form-submit-btn');
+            const originalButtonText = submitButton.textContent;
+            startProcessing(submitButton, originalButtonText);
+
+            setTimeout(() => { // Simulate save delay
+                users[currentUser].fullName = fullName;
+                users[currentUser].email = email;
+
+                showToast('Profile updated successfully!', 'success', '💾');
+                renderDashboard(); // Update dashboard username if full name changed
+                stopProcessing(submitButton);
+            }, 1000);
+        });
+
+        // --- Security Settings Logic ---
+        function populateSecuritySettings() {
+            if (!currentUser || !users[currentUser]) return;
+            toggle2FA.checked = users[currentUser].is2FAEnabled;
+        }
+
+        toggle2FA.addEventListener('change', async function() {
+            if (!currentUser) {
+                showToast('Please login to change security settings.', 'error', '❌');
+                this.checked = !this.checked; // Revert checkbox state
+                return;
+            }
+
+            const newState = this.checked;
+            const action = newState ? 'enable' : 'disable';
+            const confirmed = await showConfirmationModal('Confirm 2FA Change', `Are you sure you want to ${action} Two-Factor Authentication?`);
+
+            if (confirmed) {
+                users[currentUser].is2FAEnabled = newState;
+                showToast(`Two-Factor Authentication ${action}d successfully! (Simulated)`, 'success', '🔐');
+            } else {
+                this.checked = !newState; // Revert checkbox if cancelled
+                showToast('2FA change cancelled.', 'info', 'ℹ️');
+            }
+        });
+
+        changePasswordBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                showToast('Please login to change your password.', 'error', '❌');
+                return;
+            }
+            changePasswordForm.reset(); // Clear form fields
+            changePasswordModal.classList.add('visible');
+        });
+
+        changePasswordCancelBtn.addEventListener('click', () => {
+            changePasswordModal.classList.remove('visible');
+        });
+
+        changePasswordForm.addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!currentUser) {
+                showToast('Please login to change your password.', 'error', '❌');
+                return;
+            }
+
+            const currentPassword = currentPasswordInput.value;
+            const newPassword = newPasswordInput.value;
+            const confirmNewPassword = confirmNewPasswordInput.value;
+
+            if (currentPassword !== users[currentUser].password) {
+                showToast('Current password is incorrect.', 'error', '❌');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                showToast('New password must be at least 6 characters long.', 'error', '❌');
+                return;
+            }
+            if (newPassword !== confirmNewPassword) {
+                showToast('New passwords do not match.', 'error', '❌');
+                return;
+            }
+            if (newPassword === currentPassword) {
+                showToast('New password cannot be the same as the current password.', 'error', '❌');
+                return;
+            }
+
+            const confirmed = await showConfirmationModal('Confirm Password Change', 'Are you sure you want to change your password?');
+            if (!confirmed) {
+                showToast('Password change cancelled.', 'info', 'ℹ️');
+                return;
+            }
+
+            const submitButton = changePasswordForm.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            startProcessing(submitButton, originalButtonText);
+
+            setTimeout(() => { // Simulate password update delay
+                users[currentUser].password = newPassword;
+                showToast('Password changed successfully!', 'success', '🔑');
+                changePasswordModal.classList.remove('visible');
+                stopProcessing(submitButton);
+            }, 1500);
+        });
+
+        // --- Initial Load ---
+        showSection(authSection);
+    </script>
+</body>
+</html>
